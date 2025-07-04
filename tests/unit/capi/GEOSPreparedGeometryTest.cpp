@@ -482,5 +482,40 @@ void object::test<17>()
     GEOSFree(r2);
 }
 
+
+template<>
+template<>
+void object::test<18>()
+{
+    char *im;
+
+    geom1_ = fromWKT("POINT(-95.23506 38.971823)");
+    geom2_ = fromWKT("POLYGON((-102.051744 40.003078,-94.94386699999998 39.89813,-94.86294299999999 39.742994,-95.109304 39.54228499999999,-94.589933 39.140403,-94.61808 36.998135,-102.04224 36.993083,-102.051744 40.003078))");
+    ensure(geom1_);
+    ensure(geom2_);
+
+    // im == "0FFFFF212"
+    im = GEOSRelate(geom1_, geom2_);
+    ensure_equals("GEOSRelate", std::string(im), std::string("0FFFFF212"));
+
+    // "0FFFFF212" consistent with "T*F**F***"
+    ensure_equals("GEOSRelatePatternMatch", 
+        GEOSRelatePatternMatch(im, "T*F**F***"), 1);
+
+    ensure_equals(
+        GEOSRelatePattern(geom1_, geom2_, "T*F**F***"), 1);
+
+
+    prepGeom1_ = GEOSPrepare(geom1_);
+
+    ensure_equals("GEOSPreparedRelatePattern1", 
+        GEOSPreparedRelatePattern(prepGeom1_, geom2_, "T*F**F***"), 1);
+
+    ensure_equals("GEOSPreparedRelatePattern2", 
+        GEOSPreparedRelatePattern(prepGeom1_, geom2_, "0FFFFF212"), 1);
+
+    GEOSFree(im);
+}
+
 } // namespace tut
 
