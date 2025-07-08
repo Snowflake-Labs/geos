@@ -181,7 +181,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_ASAN "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitiz
 
 get_property(_cmake_build_type_is_cache CACHE CMAKE_BUILD_TYPE PROPERTY TYPE)
 if (_cmake_build_type_is_cache)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "ASAN")
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "ASAN" "Coverage")
 endif()
 unset(_cmake_build_type_is_cache)
 
@@ -309,7 +309,8 @@ endif()
 #-----------------------------------------------------------------------------
 # Define a coverage build
 #-----------------------------------------------------------------------------
-set(CMAKE_CXX_FLAGS_COVERAGE "-fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -fprofile-arcs -ftest-coverage")
+set(CMAKE_C_FLAGS_COVERAGE   "${CMAKE_C_FLAGS_DEBUG}   -g -O0 -fprofile-arcs -ftest-coverage")
 
 #-----------------------------------------------------------------------------
 # Extra libraries
