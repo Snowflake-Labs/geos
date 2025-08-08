@@ -369,7 +369,7 @@ TraversalAreas::getLeftHandRings(const GeometryFactory& gfact, const Envelope& b
 
     bool found_a_ring = false;
 
-    visitRings(box, coord_lists, [&gfact, &box, &shells, &holes, &found_a_ring](const std::vector<CoordinateXY>& coords, bool is_ccw) {
+    visitRings(box, coord_lists, [&gfact, /*&box,*/ &shells, &holes, &found_a_ring](const std::vector<CoordinateXY>& coords, bool is_ccw) {
         found_a_ring = true;
 
         // finding a collapsed ring is sufficient to determine whether the cell interior is inside or outside,
