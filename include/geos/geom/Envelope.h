@@ -452,22 +452,22 @@ public:
     void expandToInclude(double x, double y)
     {
         if(isNull()) {
-            minx = x;
-            maxx = x;
-            miny = y;
-            maxy = y;
+            minx = maxx = x;
+            miny = maxy = y;
         }
         else {
-            if(x < minx) {
+
+            if(std::isless(x, minx)) {
                 minx = x;
             }
-            if(x > maxx) {
+            else if(std::isgreater(x, maxx)) {
                 maxx = x;
             }
-            if(y < miny) {
+
+            if(std::isless(y, miny)) {
                 miny = y;
             }
-            if(y > maxy) {
+            else if(std::isgreater(y, maxy)) {
                 maxy = y;
             }
         }
