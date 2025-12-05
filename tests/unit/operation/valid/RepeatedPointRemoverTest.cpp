@@ -45,6 +45,19 @@ struct test_repeated_point_remover_test_data
     }
 
     void
+    checkSimpleSequence(const std::string& input, const std::string& expected, double tolerance = 0.0)
+    {
+        std::unique_ptr<CoordinateSequence> inCoords = reader.readCoordinates(input);
+        std::unique_ptr<CoordinateSequence> exCoords = reader.readCoordinates(expected);
+        auto outCoords = RepeatedPointRemover::removeRepeatedPoints(inCoords.get(), tolerance);
+        // std::cout << "output" << std::endl;
+        // std::cout << outCoords->toString() << std::endl;
+        // std::cout << "expected" << std::endl;
+        // std::cout <<  exCoords->toString() << std::endl;
+        ensure_equals(*outCoords, *exCoords);
+    }
+
+    void
     checkSequence(const std::string& input, const std::string& expected, double tolerance = 0.0)
     {
         std::unique_ptr<Geometry> inGeom = reader.read(input);
@@ -58,6 +71,10 @@ struct test_repeated_point_remover_test_data
         ensure_equals("hasZ", exCoords->hasZ(), outCoords->hasZ());
         ensure_equals("hasM", exCoords->hasM(), outCoords->hasM());
 
+        // std::cout << "output" << std::endl;
+        // std::cout << outCoords->toString() << std::endl;
+        // std::cout << "expected" << std::endl;
+        // std::cout <<  exCoords->toString() << std::endl;
         ensure_equals(*outCoords, *exCoords);
     }
 
@@ -87,9 +104,9 @@ template<>
 template<>
 void object::test<1>()
 {
-    checkSequence(
-        "LINESTRING (3 7, 8 8, 8 8, 8 8, 10 9)",
-        "LINESTRING (3 7, 8 8, 10 9)",
+    checkSimpleSequence(
+        "(3 7, 8 8, 8 8, 8 8, 10 9)",
+        "(3 7, 8 8, 10 9)",
         0.0
         );
 }
@@ -98,24 +115,28 @@ template<>
 template<>
 void object::test<2>()
 {
-    checkSequence(
-        "LINESTRING (3 7, 8 8, 8 8, 8 8)",
-        "LINESTRING (3 7, 8 8)",
+    checkSimpleSequence(
+        "(3 7, 8 8, 8 8, 8 8)",
+        "(3 7, 8 8)",
         0.0
         );
 }
 
+// CoordinateSequences just retain each coordinate within
+// the filter tolerance
 template<>
 template<>
 void object::test<3>()
 {
-    checkSequence(
-        "LINESTRING (0 0, 1 0, 4 0, 5 0)",
-        "LINESTRING (0 0, 4 0)",
+    checkSimpleSequence(
+        "(0 0, 1 0, 4 0, 5 0)",
+        "(0 0, 4 0)",
         3.0
         );
 }
 
+// Linestrings note the last point and somehow
+// retain it in preference over the internal point
 template<>
 template<>
 void object::test<4>()
@@ -123,7 +144,7 @@ void object::test<4>()
     checkGeometry(
         "LINESTRING (0 0, 1 0, 4 0, 5 0)",
         "LINESTRING (0 0, 5 0)",
-        3.0
+        3
         );
 }
 
@@ -140,7 +161,7 @@ void object::test<5>()
 }
 
 
-// Dimension is preserved
+// Dimension is preserved during reduction
 template<>
 template<>
 void object::test<6>()
@@ -151,6 +172,127 @@ void object::test<6>()
 }
 
 
+// Removing from a sequence with enough tolerance
+// results in single-entry sequence
+template<>
+template<>
+void object::test<7>()
+{
+    checkSimpleSequence(
+        "(3 7, 3 7, 3 7, 3 7)",
+        "(3 7)",
+        0.0
+        );
+}
+
+// Removing from a sequence with enough tolerance
+// results in single-entry sequence
+template<>
+template<>
+void object::test<8>()
+{
+    checkSimpleSequence(
+        "(3 7, 3.1 7.1, 3.2 7.2, 3.3 7.3)",
+        "(3 7)",
+        1.0
+        );
+}
+
+
+template<>
+template<>
+void object::test<9>()
+{
+    checkGeometry(
+        "LINESTRING (0 0, 0 1, 0 2, 0 3)",
+        "LINESTRING EMPTY",
+        14.0
+        );
+}
+
+
+// small hole should collapse away
+template<>
+template<>
+void object::test<10>()
+{
+    checkGeometry(
+        "POLYGON ((0 0, 9 0, 10 0, 10 10, 0 10, 0 1, 0 0), (5 5, 5 6, 6 6, 6 5, 5 5))",
+        "POLYGON ((0 0, 9 0, 10 10, 0 10, 0 0))",
+        3.0
+        );
+}
+
+// small exterior ring should disappear whole polygon
+template<>
+template<>
+void object::test<11>()
+{
+    checkGeometry(
+        "POLYGON ((0 0, 9 0, 10 0, 10 10, 0 10, 0 1, 0 0))",
+        "POLYGON ((0 0, 10 10, 0 0))",
+        12.0
+        );
+}
+
+template<>
+template<>
+void object::test<12>()
+{
+    checkGeometry(
+        "POLYGON ((0 0, 9 0, 10 0, 10 10, 0 10, 0 1, 0 0))",
+        "POLYGON EMPTY",
+        22.0
+        );
+}
+
+// Careful not to replace invalid coordinates
+template<>
+template<>
+void object::test<13>()
+{
+    checkGeometry(
+        "LINESTRING (0 0, 0 Inf, 1 1, Inf 0)",
+        "LINESTRING (0 0, 1 1)",
+        1.0
+        );
+}
+
+// If it filters down to just one point, it should be empty
+template<>
+template<>
+void object::test<14>()
+{
+    checkGeometry(
+        "LINESTRING (0 0, 0 Inf, 1 1)",
+        "LINESTRING EMPTY",
+        2.0
+        );
+}
+
+// Filter out invalid coordinate, even at start/ends
+template<>
+template<>
+void object::test<15>()
+{
+    checkGeometry(
+        "POLYGON ((Inf Inf, 0 0, 10 0, 10 10, 0 10, 0 0, Inf Inf))",
+        "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))",
+        2.0
+        );
+}
+
+// If it filters down to just one point, it should be empty
+template<>
+template<>
+void object::test<16>()
+{
+    checkGeometry(
+        "POLYGON ((Inf Inf, 0 0, 10 0, 10 10, 0 10, 0 0, Inf Inf))",
+        "POLYGON EMPTY",
+        22.0
+        );
+}
 
 } // namespace tut
 
