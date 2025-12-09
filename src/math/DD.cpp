@@ -20,8 +20,16 @@
 namespace geos {
 namespace math { // geos.util
 
-
-
+/* private */
+void DD::setNaN()
+{
+    hi = std::numeric_limits<double>::quiet_NaN();
+}
+/* public */
+bool DD::isInf() const
+{
+    return std::isinf(hi);
+}
 /* public */
 bool DD::isNaN() const
 {
@@ -195,6 +203,11 @@ DD operator*(const DD &lhs, double rhs)
 /* public */
 void DD::selfDivide(double yhi, double ylo)
 {
+    // Capture div-by-zero case early
+    if (yhi == 0.0) {
+        setNaN();
+        return;
+    }
     double hc, tc, hy, ty, C, c, U, u;
     C = hi/yhi; c = SPLIT*C; hc =c-C;
     u = SPLIT*yhi; hc = c-hc;
@@ -350,6 +363,7 @@ DD DD::determinant(double x1, double y1, double x2, double y2)
 {
     return determinant(DD(x1), DD(y1), DD(x2), DD(y2) );
 }
+
 
 /**
 * Computes the value of this number raised to an integral power.
