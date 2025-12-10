@@ -167,7 +167,7 @@ jobs:
 
         - cxx_compiler: clang++-19
           c_compiler: clang-19
-          build_type: ASAN
+          build_type: Debug
           cxxstd: 20
           arch: 64
           packages: 'clang-19'
