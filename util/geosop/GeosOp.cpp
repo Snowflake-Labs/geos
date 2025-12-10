@@ -38,7 +38,6 @@
 using namespace geos;
 using namespace geos::geom;
 using namespace geos::io;
-using namespace geos::util;
 
 void showHelp() {
     std::cout << "geosop executes GEOS geometry operations on inputs." << std::endl;
@@ -398,10 +397,10 @@ void GeosOp::run(OpArguments& opArgs) {
     //------------------------
 
     try {
-        geos_feexcept_setup();
+        geos::util::geos_feexcept_setup();
         execute(op, opArgs);
         if (args.isVerbose)
-            geos_feexcept_check();
+            geos::util::geos_feexcept_check();
     }
     catch (std::exception &e) {
         std::cerr << "Run-time exception: " << e.what() << std::endl;
