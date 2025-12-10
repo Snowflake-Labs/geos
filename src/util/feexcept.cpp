@@ -31,6 +31,9 @@ namespace util { // geos.util
 // #define ENABLE_DIVBYZERO_EXCEPTION
 
 #ifdef ENABLE_DIVBYZERO_EXCEPTION
+
+static void enable_divbyzero_trap() {
+
 #if defined(__APPLE__) && defined(__aarch64__)
 
     // Apple Silicon (M1/M2/etc) specific polyfill
@@ -45,23 +48,24 @@ namespace util { // geos.util
     // IXE (Bit 12): Inexact Exception enable.
     #define FE_INEXACT_TRAP   0x1000
 
-    void enable_divbyzero_trap() {
-        fenv_t env;
-        fegetenv(&env);
-        // Unmask the bit (on ARM, setting the bit *enables* the trap)
-        // Note: This relies on the specific layout of fenv_t on macOS ARM64
-        env.__fpcr |= FE_DIVBYZERO_TRAP;
-        fesetenv(&env);
-    }
-#else
-    // Linux / Standard approach
-    void enable_divbyzero_trap() {
-        feenableexcept(FE_DIVBYZERO);
-    }
-#endif
-#endif
+    fenv_t env;
+    fegetenv(&env);
+    // Unmask the bit (on ARM, setting the bit *enables* the trap)
+    // Note: This relies on the specific layout of fenv_t on macOS ARM64
+    env.__fpcr |= FE_DIVBYZERO_TRAP;
+    fesetenv(&env);
 
-void
+#else
+
+    // Linux / Standard approach
+    feenableexcept(FE_DIVBYZERO);
+
+#endif // __APPLE__
+}
+#endif // ENABLE_DIVBYZERO_EXCEPTION
+
+
+void GEOS_DLL
 geos_feexcept_setup()
 {
 #ifdef HAVE_FENV
@@ -75,8 +79,7 @@ geos_feexcept_setup()
 }
 
 
-
-void
+void GEOS_DLL
 geos_feexcept_check()
 {
 #ifdef HAVE_FENV
