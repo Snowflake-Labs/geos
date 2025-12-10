@@ -203,11 +203,6 @@ DD operator*(const DD &lhs, double rhs)
 /* public */
 void DD::selfDivide(double yhi, double ylo)
 {
-    // Capture div-by-zero case early
-    if (yhi == 0.0) {
-        setNaN();
-        return;
-    }
     double hc, tc, hy, ty, C, c, U, u;
     C = hi/yhi; c = SPLIT*C; hc =c-C;
     u = SPLIT*yhi; hc = c-hc;
