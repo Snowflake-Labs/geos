@@ -8,8 +8,7 @@
 #include <geos/geom/Coordinate.h>
 
 #include <array>
-#if !defined(MISSING_FENV)
-#define HAVE_FENV
+#ifdef HAVE_FENV
 #include <cfenv>
 #endif
 #include <unordered_set>

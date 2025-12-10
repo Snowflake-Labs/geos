@@ -25,11 +25,8 @@
 #include <geos/io/WKBReader.h>
 #include <geos/io/WKBStreamReader.h>
 #include <geos/io/WKBWriter.h>
+#include <geos/util/feexcept.h>
 
-#if !defined(MISSING_FENV)
-#define HAVE_FENV
-#include <cfenv>
-#endif
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -41,6 +38,7 @@
 using namespace geos;
 using namespace geos::geom;
 using namespace geos::io;
+using namespace geos::util;
 
 void showHelp() {
     std::cout << "geosop executes GEOS geometry operations on inputs." << std::endl;
@@ -400,44 +398,10 @@ void GeosOp::run(OpArguments& opArgs) {
     //------------------------
 
     try {
-#ifdef HAVE_FENV
-        std::feclearexcept(FE_ALL_EXCEPT); // clear floating-point status flags
-
+        geos_feexcept_setup();
         execute(op, opArgs);
-
-#ifdef FE_INEXACT
-        // Catch everything except for FE_INEXACT, which is usually harmless
-        const int fpexp = std::fetestexcept(FE_ALL_EXCEPT ^ FE_INEXACT);
-#else
-        const int fpexp = std::fetestexcept(FE_ALL_EXCEPT);
-#endif
-        if (args.isVerbose && (fpexp != 0)) {
-            std::cerr << "Operation raised floating-point environment flag(s):";
-#ifdef FE_DIVBYZERO
-            if (fpexp & FE_DIVBYZERO)
-                std::cerr << " FE_DIVBYZERO";
-#endif
-#ifdef FE_INEXACT
-            if (fpexp & FE_INEXACT)
-                std::cerr << " FE_INEXACT";
-#endif
-#ifdef FE_INVALID
-            if (fpexp & FE_INVALID)
-                std::cerr << " FE_INVALID";
-#endif
-#ifdef FE_OVERFLOW
-            if (fpexp & FE_OVERFLOW)
-                std::cerr << " FE_OVERFLOW";
-#endif
-#ifdef FE_UNDERFLOW
-            if (fpexp & FE_UNDERFLOW)
-                std::cerr << " FE_UNDERFLOW";
-#endif
-            std::cerr << std::endl;
-        }
-#else  // MISSING_FENV
-        execute(op, opArgs);
-#endif  // HAVE_FENV
+        if (args.isVerbose)
+            geos_feexcept_check();
     }
     catch (std::exception &e) {
         std::cerr << "Run-time exception: " << e.what() << std::endl;

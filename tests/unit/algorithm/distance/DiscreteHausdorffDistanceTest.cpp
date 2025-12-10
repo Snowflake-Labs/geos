@@ -16,8 +16,7 @@
 #include <cmath>
 #include <string>
 #include <memory>
-#if !defined(MISSING_FENV)
-#define HAVE_FENV
+#ifdef HAVE_FENV
 #include <cfenv>
 #endif
 

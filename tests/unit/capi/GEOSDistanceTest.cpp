@@ -9,9 +9,8 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
-#if !defined(MISSING_FENV)
-#define HAVE_FENV
-#include <fenv.h>
+#ifdef HAVE_FENV
+#include <cfenv>
 #endif
 #include <cmath>
 

@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include <geos/util/feexcept.h>
+
 std::string RESOURCE_DIR;
 
 namespace tut {
@@ -105,6 +107,9 @@ main(int argc, const char* argv[]) {
             }
             return EXIT_SUCCESS;
         } else {
+
+            // geos::util::geos_feexcept_setup();
+
             if (!testName.empty()) {
                 tut::test_result result;
                 tut::runner.get().run_test(grpname, std::atoi(testName.c_str()), result);
