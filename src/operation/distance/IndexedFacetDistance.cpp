@@ -54,31 +54,20 @@ IndexedFacetDistance::nearestPoints(const Geometry* g1, const Geometry* g2)
 double
 IndexedFacetDistance::distance(const Geometry* g) const
 {
-    auto facets = nearestFacets(g);
-    auto fs1 = facets.first;
-    auto fs2 = facets.second;
-    return fs1->distance(*fs2);
-}
-
-/* private */
-std::pair<const FacetSequence*, const FacetSequence*>
-IndexedFacetDistance::nearestFacets(const Geometry* g) const
-{
-    std::pair<const FacetSequence*, const FacetSequence*> facets;
     auto tree2 = FacetSequenceTreeBuilder::build(g);
     auto objs = cachedTree->nearestNeighbour<FacetDistance>(*tree2);
-    facets.first = static_cast<const FacetSequence*>(objs.first);
-    facets.second = static_cast<const FacetSequence*>(objs.second);
-    return facets;
+    auto fs1 = static_cast<const FacetSequence*>(objs.first);
+    auto fs2 = static_cast<const FacetSequence*>(objs.second);
+    return fs1->distance(*fs2);
 }
-
 
 std::unique_ptr<geom::CoordinateSequence>
 IndexedFacetDistance::nearestPoints(const geom::Geometry* g) const
 {
-    auto facets = nearestFacets(g);
-    auto fs1 = facets.first;
-    auto fs2 = facets.second;
+    auto tree2 = FacetSequenceTreeBuilder::build(g);
+    auto objs = cachedTree->nearestNeighbour<FacetDistance>(*tree2);
+    auto fs1 = static_cast<const FacetSequence*>(objs.first);
+    auto fs2 = static_cast<const FacetSequence*>(objs.second);
     auto nearestPts = fs1->nearestLocations(*fs2);
     std::unique_ptr<CoordinateSequence> cs(new CoordinateSequence());
     cs->setPoints(nearestPts);

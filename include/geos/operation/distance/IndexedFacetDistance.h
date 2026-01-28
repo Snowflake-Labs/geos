@@ -114,9 +114,6 @@ private:
     std::unique_ptr<geos::index::strtree::TemplateSTRtree<const FacetSequence*>> cachedTree;
     const geom::Geometry& baseGeometry;
 
-    std::pair<const FacetSequence*, const FacetSequence*>
-        nearestFacets(const geom::Geometry* g) const;
-
 };
 }
 }
