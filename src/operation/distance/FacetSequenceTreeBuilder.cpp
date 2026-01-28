@@ -44,21 +44,21 @@ FacetSequenceTreeBuilder::computeFacetSequences(const Geometry* g)
     class FacetSequenceAdder : public geom::GeometryComponentFilter {
         std::vector<FacetSequence>&  m_sections;
 
-    public :
-        FacetSequenceAdder(std::vector<FacetSequence> & p_sections) :
-            m_sections(p_sections) {}
-        void
-        filter_ro(const Geometry* geom) override
-        {
-            if(const LineString* ls = dynamic_cast<const LineString*>(geom)) {
-                const CoordinateSequence* seq = ls->getCoordinatesRO();
-                addFacetSequences(seq, m_sections);
+        public :
+            FacetSequenceAdder(std::vector<FacetSequence> & p_sections) :
+                m_sections(p_sections) {}
+            void
+            filter_ro(const Geometry* geom) override
+            {
+                if(const LineString* ls = dynamic_cast<const LineString*>(geom)) {
+                    const CoordinateSequence* seq = ls->getCoordinatesRO();
+                    addFacetSequences(seq, m_sections);
+                }
+                else if(const Point* pt = dynamic_cast<const Point*>(geom)) {
+                    const CoordinateSequence* seq = pt->getCoordinatesRO();
+                    addFacetSequences(seq, m_sections);
+                }
             }
-            else if(const Point* pt = dynamic_cast<const Point*>(geom)) {
-                const CoordinateSequence* seq = pt->getCoordinatesRO();
-                addFacetSequences(seq, m_sections);
-            }
-        }
     };
 
     FacetSequenceAdder facetSequenceAdder(sections);
@@ -68,8 +68,9 @@ FacetSequenceTreeBuilder::computeFacetSequences(const Geometry* g)
 }
 
 void
-FacetSequenceTreeBuilder::addFacetSequences(const CoordinateSequence* pts,
-        std::vector<FacetSequence> & sections)
+FacetSequenceTreeBuilder::addFacetSequences(
+    const CoordinateSequence* pts,
+    std::vector<FacetSequence>& sections)
 {
     std::size_t i = 0;
     std::size_t size = pts->size();
