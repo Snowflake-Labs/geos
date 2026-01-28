@@ -56,6 +56,9 @@ IndexedFacetDistance::distance(const Geometry* g) const
 {
     auto tree2 = FacetSequenceTreeBuilder::build(g);
     auto objs = cachedTree->nearestNeighbour<FacetDistance>(*tree2);
+    if (!objs.first || !objs.second) {
+        throw util::GEOSException("Cannot calculate IndexedFacetDistance on empty geometries.");
+    }
     auto fs1 = static_cast<const FacetSequence*>(objs.first);
     auto fs2 = static_cast<const FacetSequence*>(objs.second);
     return fs1->distance(*fs2);
@@ -66,6 +69,9 @@ IndexedFacetDistance::nearestPoints(const geom::Geometry* g) const
 {
     auto tree2 = FacetSequenceTreeBuilder::build(g);
     auto objs = cachedTree->nearestNeighbour<FacetDistance>(*tree2);
+    if (!objs.first || !objs.second) {
+        throw util::GEOSException("Cannot calculate IndexedFacetDistance on empty geometries.");
+    }
     auto fs1 = static_cast<const FacetSequence*>(objs.first);
     auto fs2 = static_cast<const FacetSequence*>(objs.second);
     auto nearestPts = fs1->nearestLocations(*fs2);
